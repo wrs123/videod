@@ -1,5 +1,13 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow,ipcMain} from 'electron'
 import '../renderer/store'
+import VideoDownload from './videoDownload'
+
+
+// app.commandLine.appendSwitch('proxy-server', 'http://127.0.0.1:7890');
+
+// app.whenReady().then(() => {
+//   // 在这里写入你的代码
+// })
 
 /**
  * Set `__static` path to static files in production
@@ -21,7 +29,10 @@ function createWindow () {
   mainWindow = new BrowserWindow({
     height: 563,
     useContentSize: true,
-    width: 1000
+    width: 1000,
+    webPreferences: {
+      nodeIntegration: true,
+    }
   })
 
   mainWindow.loadURL(winURL)
@@ -29,9 +40,23 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+  
 }
 
+  
+
+
+
 app.on('ready', createWindow)
+
+// mainWindow.webContents.session.setProxy({
+//   proxyRules: '127.0.0.1:7890'
+// }, function (data) {
+//   console.log('代理设置完毕')
+//   mainWindow.loadURL(winURL)
+// })
+
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -44,6 +69,35 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+
+ipcMain.on('do',  (e,v)=>{
+  mainWindow.webContents.session.setProxy({
+    proxyRules: "127.0.0.1:7890"
+  }, async function (data) {
+    let video = new VideoDownload()
+    e.sender.send('re_do', await video.download(v))
+})
+})
+
+// 设置代理
+// ipcMain.on('set_proxy', (event, arg) => {
+//   console.log(arg);
+//   var { http_proxy } = arg
+//   console.log(http_proxy)
+//   mainWindow.webContents.session.setProxy({
+//     proxyRules: http_proxy
+//   }, function (data) {
+//     console.log('代理设置完毕')
+//     videoDownload.download(v)
+// })
+// })
+
+// 去掉代理
+ipcMain.on('remove_proxy', (event, arg) => {
+  win.webContents.session.setProxy({});
+})
+
 
 /**
  * Auto Updater
