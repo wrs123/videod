@@ -1,8 +1,14 @@
 import BaseResult from '../domain/baseResult';
 
 const fs = require('fs');
+const child_process = require('child_process');
+const fsextra = require('fs-extra');
 
 export default class Tools{
+
+    constructor(){
+    }
+
     /**
      * 文件目录判断  不存在则创建目录
      * @param {} path 
@@ -68,7 +74,7 @@ export default class Tools{
      */
     async readM3U8(path, uri){
 
-        return new Promise((rev, rej) => {
+        return new Promise((res, rej) => {
             fs.readFile(path,"utf-8", (err, data) => {
                 if(err){
                     return rej(err)
@@ -79,10 +85,28 @@ export default class Tools{
                      return item.match(/\.ts$/);
                  });
  
-                 return rev(arr)
+                 return res(arr)
             }); //读取 m3u8
         } )
+    }
+
+
+    async mixTsVideo(url, title){
+        return new Promise((res, rej) => {
+            child_process.exec(`cd ${url} &&  ffmpeg -i input.txt -acodec copy -vcodec copy -absf aac_adtstoasc ../${title}.mp4`,function(err, stdout, stderr){
+                if(err){
+                    return rej(new BaseResult({code: 1, message: err, status: 'err'}))
+                }else{
+                    try{
+                        fs.rmSync(url, {recursive: true})
+                        return res(new BaseResult({}))
+                    }catch (e) {
+                        return rej(new BaseResult({code: 1, message: "删除缓存失败"+e, status: 'err'}))
+                    }
+                    
+                }
+            });
+        })
         
-       
     }
 }

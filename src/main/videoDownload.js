@@ -2,12 +2,12 @@ import Network from './utils/network'
 import * as cheerio from 'cheerio'
 import { ipcMain, ipcRenderer } from 'electron'
 import Tools from './utils/tools'
+import BaseResult from './domain/baseResult'
 // const ffmpeg = require('fluent-ffmpeg');
 const {resolve} = require('path')
 const fs = require('fs')
 const path = require('path')
-const child_process = require('child_process');
-const fsextra = require('fs-extra');
+
 
 // const r = request.defaults({'proxy':'http://127.0.0.1:7890'})
 export default class VideoDownload {
@@ -68,20 +68,8 @@ export default class VideoDownload {
             
             //开始依赖配置合成
             console.log("开始合成-----");
-            child_process.exec(`cd `+this.downloadRoot+'/'+vid+`/.file &&  ffmpeg -i input.txt -acodec copy -vcodec copy -absf aac_adtstoasc ../${title}.mp4`,function(error, stdout, stderr){
-                if(error){
-                    console.error("合成失败---",error);
-                }else{
-                    console.log("合成成功--",stdout);
-                    try{
-                      fs.rmSync('./download/'+vid+`/.file`, {recursive: true})
-                      // return {code: 0}
-                  }catch (e) {
-                      console.error(e)
-                  }
-                    
-                }
-            });
+            let re = await tools.mixTsVideo(this.downloadRoot+'/'+vid+'/.file', title)
+            return re
           }
           
       }catch(e){
