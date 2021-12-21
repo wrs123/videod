@@ -17,7 +17,7 @@ export default class Tools{
                     if(index>paths.length) return res();
 
                     let newPath = paths.slice(0,index).join('/');
-                    console.log('====='+newPath)
+                
                     fs.access(newPath,function (err) {
                         if(err){//如果文件不存在，就创建这个文件
                             fs.mkdir(newPath,function (err) {
@@ -38,9 +38,9 @@ export default class Tools{
      * 创建视频的配置文件
      * @param {*} path 
      */
-    async cerateConfigFile({uri, path, id, title, sadd}){
+    async cerateConfigFile({uri, path, id, title, courceAdd}){
         let content = {
-            sadd: sadd,
+            courceAdd: courceAdd,
             uri: uri,
             vid: id,
             title: title
@@ -60,5 +60,29 @@ export default class Tools{
             })
             writerStream.end(); 
         })
+    }
+
+    /**
+     * 解析m3u8文件
+     * @param {String} path 
+     */
+    async readM3U8(path, uri){
+
+        return new Promise((rev, rej) => {
+            fs.readFile(path,"utf-8", (err, data) => {
+                if(err){
+                    return rej(err)
+                }
+                 console.log(data)
+                 var arr = data.split("\n");
+                 arr = arr.filter((item)=>{
+                     return item.match(/\.ts$/);
+                 });
+ 
+                 return rev(arr)
+            }); //读取 m3u8
+        } )
+        
+       
     }
 }

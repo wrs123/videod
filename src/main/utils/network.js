@@ -6,13 +6,15 @@ const fs = require('fs')
 export default class Network{
 
     get(url, options) {
+        
         let data = ''
         options = options == null ? {} : options
+        
 
         return new Promise(function(resolve, reject){
-            let request=net.request(url)
+            const requs = net.request(url)
 
-            request.on('response',(response)=>{  //监听响应
+            requs.on('response',(response)=>{  //监听响应
                 response.on('data',(chunk)=>{  //获取返回数据
                     // console.log(chunk.toString());
                     data += chunk
@@ -26,17 +28,27 @@ export default class Network{
                     reject(error)
                 })
             })
-            request.end(); 
+            requs.end(); 
+            console.log("wangluop"+url)
         })
     }
-
-    async downloadFile({uri, path, name, title, sadd}, options){
+    
+   /**
+    * 下载文件
+    * @param {*} uri  下载路径
+    * @param {*} path 保存路径
+    * @param {*} name 文件名
+    * @param {*} title 视频标题
+    * @param {*} courceAdd 视频源网址
+    * @param {*} options 
+    * @returns 
+    */
+    async downloadFile({uri, path, name, type}, options){
         let data = ''
         options = options == null ? {} : options
-        path = path+'\\'+name
-        const dest = path+'\\'+name+'.m3u8'
+        const dest = path+'\\'+name+type
         const tools = new Tools()
-        console.log(dest,path)
+      
         await tools.pathAccess(path)
         let file = fs.createWriteStream(dest)
 
@@ -54,9 +66,7 @@ export default class Network{
     
                 file.on('finish', async ()=>{
                     file.close();
-                    console.log("下载完成")
-                    let result =  await tools.cerateConfigFile({uri: uri, path: path, id: name, title: title, sadd: sadd})
-                    res(result)
+                    res(new BaseResult({}))
                   }).on('error', (err)=>{
                     fs.unlink(dest);
                   });

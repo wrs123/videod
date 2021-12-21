@@ -11,4 +11,8 @@ export default class BaseResult{
         //status
         this.data = typeof(data) == 'undefined' ? '' : data;
     }
+
+    setData(data){
+        this.data = typeof(data) == 'undefined' ? '' : data;
+    }
 }

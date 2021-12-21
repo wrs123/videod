@@ -1,6 +1,7 @@
-import { app, BrowserWindow,ipcMain} from 'electron'
+import { app, BrowserWindow, ipcMain, session} from 'electron'
 import '../renderer/store'
 import VideoDownload from './videoDownload'
+
 
 
 // app.commandLine.appendSwitch('proxy-server', 'http://127.0.0.1:7890');
@@ -17,12 +18,23 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
+// const vueDevToolsPath = path.join(
+//   os.homedir(),
+//   '/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.9.0_0'
+// )
+
+
+// app.whenReady().then(async () => {
+//   await session.defaultSession.loadExtension(vueDevToolsPath)
+// })
+
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
 
 function createWindow () {
+
   /**
    * Initial window options
    */
@@ -32,6 +44,7 @@ function createWindow () {
     width: 1000,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
     }
   })
 
@@ -45,10 +58,10 @@ function createWindow () {
 }
 
   
+app.whenReady().then(() => {
+  createWindow()
+})
 
-
-
-app.on('ready', createWindow)
 
 // mainWindow.webContents.session.setProxy({
 //   proxyRules: '127.0.0.1:7890'
@@ -71,13 +84,20 @@ app.on('activate', () => {
 })
 
 
-ipcMain.on('do',  (e,v)=>{
+ipcMain.handle('start_do', async (e,v)=>{
+  console.log(v)
+
+  
+
+  
   mainWindow.webContents.session.setProxy({
     proxyRules: "127.0.0.1:7890"
   }, async function (data) {
-    let video = new VideoDownload()
-    e.sender.send('re_do', await video.download(v))
-})
+    console.log(data)
+  })
+  let video = new VideoDownload(),
+      res = await video.download(v)
+    return res
 })
 
 // 设置代理
