@@ -51,7 +51,7 @@
          this.$data.status = 1
         let url = 'https://www.91porn.com/view_video.php?viewkey=1309503227&page=&viewtype=&category='
         
-        ipcRenderer.invoke('start_do', url).then(res => {
+        ipcRenderer.invoke('start_do', this.$data.value).then(res => {
           if(res.code == 0){
           console.log(res)
           this.$data.status = 0

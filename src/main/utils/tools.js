@@ -3,6 +3,7 @@ import BaseResult from '../domain/baseResult';
 const fs = require('fs');
 const child_process = require('child_process');
 const fsextra = require('fs-extra');
+const path = require("path")
 
 export default class Tools{
 
@@ -14,16 +15,17 @@ export default class Tools{
      * @param {} path 
      * @returns 
      */
-     async pathAccess(path){
+     async pathAccess(pathss){
+         console.log(pathss)
         return new Promise((res, rej) => {
-            let paths = path.split('\\');
+            let paths = pathss.split('/');
             let index = 1
             function next(index) {
                     //递归结束判断
                     if(index>paths.length) return res();
 
                     let newPath = paths.slice(0,index).join('/');
-                
+                    console.log(newPath)
                     fs.access(newPath,function (err) {
                         if(err){//如果文件不存在，就创建这个文件
                             fs.mkdir(newPath,function (err) {
@@ -42,16 +44,16 @@ export default class Tools{
 
     /**
      * 创建视频的配置文件
-     * @param {*} path 
+     * @param {*} paths 
      */
-    async cerateConfigFile({uri, path, id, title, courceAdd}){
+    async cerateConfigFile({uri, paths, id, title, courceAdd}){
         let content = {
             courceAdd: courceAdd,
             uri: uri,
             vid: id,
             title: title
         },
-        streamPath = path+'\\.vconfig'
+        streamPath = path.join(paths, '/.vconfig')
 
         console.log(content)
         return new Promise((res, rej) => {
@@ -70,12 +72,12 @@ export default class Tools{
 
     /**
      * 解析m3u8文件
-     * @param {String} path 
+     * @param {String} paths 
      */
-    async readM3U8(path, uri){
+    async readM3U8(paths, uri){
 
         return new Promise((res, rej) => {
-            fs.readFile(path,"utf-8", (err, data) => {
+            fs.readFile(paths, "utf-8", (err, data) => {
                 if(err){
                     return rej(err)
                 }

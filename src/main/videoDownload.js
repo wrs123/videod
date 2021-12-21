@@ -14,7 +14,7 @@ export default class VideoDownload {
 
     constructor(){
       this.netMo = new Network(),
-      this.downloadRoot = resolve('./')+'\\download'
+      this.downloadRoot = path.join(resolve('./'),'/download')
     }
 
 
@@ -29,20 +29,19 @@ export default class VideoDownload {
       try{
         let data = await this.netMo.get(url)
             
-        console.log("wangluo121212p")
+        console.log(data)
         html = data.toString()
-        
   
           let $ = cheerio.load(html)
           vid = $("div#VID").html()
-          title = $("h4.login_register_header").html().split(">")[1].replace(/\s+/g,"")
+          title = $("title").html().replace(/\s+/g,"").replace("Chinesehomemadevideo","")
           src = durl+vid+'/'+vid+'.m3u8'
           
           console.log(src)
           let result = await this.getM3u8(src, vid, '.m3u8', title, url)
           if(result.code == 0){
             
-            let uriList = await tools.readM3U8(result.data, durl+'/'+vid),
+            let uriList = await tools.readM3U8(result.data, path.join(durl+'/'+vid)),
             videoList = []
             videoList.push("ffconcat version 1.0")
             for(let i=0; i<uriList.length; i++){
@@ -53,22 +52,22 @@ export default class VideoDownload {
         
               await this.netMo.downloadFile({
                 uri: fullUri,
-                path: this.downloadRoot+'\\'+vid+'\\.file',
+                paths: path.join(this.downloadRoot, vid, '/.file') ,
                 name: fileName,
                 type: '.'+type
               })
               videoList.push('file  '+ fileName+'.'+type)
             }
             try{
-              fs.writeFileSync(this.downloadRoot+'\\'+vid+'\\.file\\input.txt',videoList.join('\n'), undefined, 'utf-8')
+              fs.writeFileSync(path.join(this.downloadRoot, vid, '/.file/input.txt') ,videoList.join('\n'), undefined, 'utf-8')
             }catch(e){
                 console.log("写入配置出错--",e);
-                return ;
+                // return ;
             }
             
             //开始依赖配置合成
             console.log("开始合成-----");
-            let re = await tools.mixTsVideo(this.downloadRoot+'/'+vid+'/.file', title)
+            let re = await tools.mixTsVideo(path.join(this.downloadRoot, vid, '/.file'), title)
             return re
           }
           
@@ -85,7 +84,7 @@ export default class VideoDownload {
         uri: url,
         name: name,
         type: type,
-        path: this.downloadRoot+'\\'+name,
+        paths: path.join(this.downloadRoot, name),
       })
       // if(result.code == 0){
       //   let results =  await tools.cerateConfigFile({uri: url, path: path, id: name, title: title, courceAdd: courceAdd})
@@ -93,7 +92,7 @@ export default class VideoDownload {
   
       //   return results
       // }
-      if(result.code == 0) result.setData(this.downloadRoot+'\\'+name+'\\'+name+type)
+      if(result.code == 0) result.setData(path.join(this.downloadRoot, name, name+type))
       return result
     }
 }

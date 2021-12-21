@@ -2,6 +2,7 @@ import {net} from 'electron'
 import BaseResult from '../domain/baseResult'
 import Tools from './tools'
 const fs = require('fs')
+const path = require("path")
 
 export default class Network{
 
@@ -36,20 +37,20 @@ export default class Network{
    /**
     * 下载文件
     * @param {*} uri  下载路径
-    * @param {*} path 保存路径
+    * @param {*} paths 保存路径
     * @param {*} name 文件名
     * @param {*} title 视频标题
     * @param {*} courceAdd 视频源网址
     * @param {*} options 
     * @returns 
     */
-    async downloadFile({uri, path, name, type}, options){
+    async downloadFile({uri, paths, name, type}, options){
         let data = ''
         options = options == null ? {} : options
-        const dest = path+'\\'+name+type
+        const dest = path.join(paths, '/'+name+type)
         const tools = new Tools()
       
-        await tools.pathAccess(path)
+        await tools.pathAccess(paths)
         let file = fs.createWriteStream(dest)
 
         return new Promise((res, rej) => {
