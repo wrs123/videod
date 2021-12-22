@@ -1,13 +1,27 @@
 <template>
   <div>
-    <Row>
+    <Row style="margin-top: 10px;">
        <Col span="18" offset="2"><Input search enter-button placeholder="Enter something..."  @on-search="search" v-model="value"/></Col>
       <!-- <Button type="primary" @click="startProxy">开启</Button> -->
     </Row>
-    <Row >
+    <Row style="margin-top: 15px;">
        <Col span="18" offset="2"> 
-       <Card >
-            <Progress :percent="45" status="active" />
+       <Card :padding=10>
+         <span>{{item.title}}</span>
+         <div class="download_detail">
+           <div class="progress">
+             <Progress :percent="item.progress" :stroke-width="5"  status="active" />
+           </div>
+           <div class="buttonGroup" style="width: 88px;">
+             <ButtonGroup size="small" >
+                <Button><Icon type="md-play" /> 
+                <!-- <Icon type="md-pause" /> -->
+                </Button>
+                <Button @click="openFolder"><Icon type="md-folder" /></Button>
+                <Button><Icon type="md-trash" /></Button>
+            </ButtonGroup>
+           </div>
+         </div>
         </Card>
       </Col>
       <Col span="18" offset="2">
@@ -26,6 +40,9 @@
 <script>
 
   import {ipcRenderer} from 'electron';
+  const shell = require('electron').shell
+  const os = require('os')
+
   export default {
     name: 'index-page',
     methods: {
@@ -35,6 +52,12 @@
       return {
         value: '',
         status: 0,
+        item: {
+          title: '学妹真骚 穿着男朋友送的高跟鞋和我啪啪',
+          progress: 35,
+          type: 0,
+          path: "D:\\code\\electron\\videod\\download\\570450\\"
+        }
       }
     },
     created(){
@@ -57,12 +80,24 @@
           this.$data.status = 0
         }
         });
+      },
+       openFolder(){
+         console.log(this.$data.item.path)
+          shell.showItemInFolder(this.$data.item.path)
       }
-     
     }
+   
   }
 </script>
 
 <style lang="scss" scoped>
-  
+  .download_detail{
+    width: 100%;
+    display: flex;
+
+  }
+
+  .download_detail .progress{
+    width: calc(100% - 88px);
+  }
 </style>
