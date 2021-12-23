@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain, session} from 'electron'
 import '../renderer/store'
 import VideoDownload from './videoDownload'
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 7381 });
 
 
 
@@ -86,10 +88,6 @@ app.on('activate', () => {
 
 ipcMain.handle('start_do', async (e,v)=>{
   console.log(v)
-
-  
-
-  
   mainWindow.webContents.session.setProxy({
     proxyRules: "127.0.0.1:7890"
   }, async function (data) {
@@ -99,6 +97,44 @@ ipcMain.handle('start_do', async (e,v)=>{
       res = await video.download(v)
     return res
 })
+
+//广播
+wss.broadcast = function broadcast(ws) {
+	// debugger;
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+          client.send(ws);	
+      }
+    });
+};
+
+//socket初始化
+wss.on('connection', function connection(ws) {
+  // var i=0
+
+  //   var int = setInterval(function f() {
+  //   ws.send(i++) // 每隔 1 秒给连接方报一次数
+  // }, 100)
+
+  ws.on('message', async (jsonStr,flags) => {
+    let obj = eval('(' + jsonStr + ')');
+
+    // if(obj.do === 'new_mission'){
+    //   mainWindow.webContents.session.setProxy({
+    //     proxyRules: "127.0.0.1:7890"
+    //   }, async function (data) {
+    //     console.log(data)
+    //   })
+
+      let video = new VideoDownload(),
+      res = await video.analysis(obj.item) 
+      console.log(res)
+      wss.broadcast(JSON.stringify(res));    
+    }
+    
+    
+  });
+});
 
 // 设置代理
 // ipcMain.on('set_proxy', (event, arg) => {

@@ -61,6 +61,7 @@
 
   },
   "devDependencies": {
+    "ws": "^8.4.0",
     "cheerio": "1.0.0-rc.10",
     "electron-store": "^7.0.0",
     "fluent-ffmpeg": "^2.1.2",

@@ -17,6 +17,40 @@ export default class VideoDownload {
       this.downloadRoot = path.join(resolve('./'),'/download')
     }
 
+    /**
+     * 视频地址解析
+     * @param {Object} data 
+     * @returns 
+     */
+    async analysis(data){
+      let html = '',
+          vid,title,src,
+          durl = 'https://la.killcovid2021.com/m3u8/',
+          url = data.url
+      
+      try{
+        let html = await this.netMo.get(url)
+        html = html.toString()
+  
+          let $ = cheerio.load(html)
+          vid = $("div#VID").html()
+          title = $("title").html().replace(/\s+/g,"").replace("Chinesehomemadevideo","")
+          src = durl+vid+'/'+vid+'.m3u8'
+          
+          console.log(src)
+          let result = await this.getM3u8(src, vid, '.m3u8', path.join(this.downloadRoot, vid))
+          if(result.code == 0){
+             data.title = title
+             data.status = 1
+             data.dir = path.join(this.downloadRoot, vid)
+             return data
+          }
+          
+      }catch(e){
+        console.log(e)
+      }
+
+    }
 
     async download(url) {
       console.log(url)
@@ -77,14 +111,14 @@ export default class VideoDownload {
       
     }
 
-    async getM3u8(url, name, type, title, courceAdd){
+    async getM3u8(url, name, type, paths){
       
       let tools = new Tools()
       let result = await this.netMo.downloadFile({
         uri: url,
         name: name,
         type: type,
-        paths: path.join(this.downloadRoot, name),
+        paths: paths,
       })
       // if(result.code == 0){
       //   let results =  await tools.cerateConfigFile({uri: url, path: path, id: name, title: title, courceAdd: courceAdd})
