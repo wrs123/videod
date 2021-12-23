@@ -44,16 +44,18 @@ export default class Network{
     * @param {*} options 
     * @returns 
     */
-    async downloadFile({uri, paths, name, type}, options){
-        let data = ''
+    async downloadFile({uri, paths}, options){
+        console.log(paths,uri)
+        let data = '',
+            dir = path.dirname(paths)
         options = options == null ? {} : options
-        const dest = path.join(paths, '/'+name+type)
         const tools = new Tools()
       
-        await tools.pathAccess(paths)
-        let file = fs.createWriteStream(dest)
+        await tools.pathAccess(dir)
+        let file = fs.createWriteStream(paths)
 
         return new Promise((res, rej) => {
+            console.log(uri)
             let request=net.request(uri)
             request.on('response',(response)=>{  //监听响应
                 response.on('data',(chunk)=>{  //获取返回数据

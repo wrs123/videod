@@ -111,15 +111,27 @@
           // 监听消息
           socket.onmessage = function(event) {
             console.log(event)
-            item = JSON.parse(event.data)
-            if(item.do === 'new_mission'){
-              that.$data.downloadItems[item.item.id].title = item.item.title
-              that.$data.downloadItems[item.item.id].status = item.item.status
-              that.$data.downloadItems[item.item.id].dir = item.item.dir
-              console.log(that.$data)
-              // if(){
+            let item = JSON.parse(event.data)
 
-              // }
+            switch(item.do){
+              case 'new_mission': 
+                console.log(111)
+                that.$data.downloadItems[item.item.id].title = item.item.title
+                that.$data.downloadItems[item.item.id].status = item.item.status
+                that.$data.downloadItems[item.item.id].dir = item.item.dir
+                console.log(that.$data)
+                if(item.item.status === 1){
+                  //开始下载请求
+                  socket.send(JSON.stringify({do: 'download',item: item.item})); 
+                }
+                break ;
+
+              case 'download':
+                console.log(item.item.status)
+                that.$data.downloadItems[item.item.id].progress = item.item.progress
+                that.$data.downloadItems[item.item.id].status = item.item.status
+                break ;
+
             }
           }; 
 

@@ -16,7 +16,6 @@ export default class Tools{
      * @returns 
      */
      async pathAccess(pathss){
-         console.log(pathss)
         return new Promise((res, rej) => {
             let paths = pathss.split('/');
             let index = 1
@@ -25,7 +24,6 @@ export default class Tools{
                     if(index>paths.length) return res();
 
                     let newPath = paths.slice(0,index).join('/');
-                    console.log(newPath)
                     fs.access(newPath,function (err) {
                         if(err){//如果文件不存在，就创建这个文件
                             fs.mkdir(newPath,function (err) {
@@ -74,7 +72,7 @@ export default class Tools{
      * 解析m3u8文件
      * @param {String} paths 
      */
-    async readM3U8(paths, uri){
+    async readM3U8(paths){
 
         return new Promise((res, rej) => {
             fs.readFile(paths, "utf-8", (err, data) => {

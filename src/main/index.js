@@ -116,15 +116,27 @@ wss.broadcast = function broadcast(ws) {
 //socket初始化
 wss.on('connection', function connection(ws) {
 
+  // mainWindow.webContents.session.setProxy({
+  //   proxyRules: "127.0.0.1:7890"
+  // }, async function (data) {
+  //   console.log(data)
+  // })
+
   ws.on('message', async (jsonStr,flags) => {
-    let obj = eval('(' + jsonStr + ')');
+    let obj = eval('(' + jsonStr + ')'),
+        video = new VideoDownload()
 
     if(obj.do === 'new_mission'){
-      let video = new VideoDownload(),
-      res = await video.analysis(obj.item) 
-      console.log(res)
+      let res = await video.analysis(obj.item) 
       wss.broadcast(JSON.stringify({do: 'new_mission', item: res}));   
       } 
+
+      if(obj.do === 'download'){
+        await video.download(obj.item, (res) => {
+          console.log(res)
+          wss.broadcast(JSON.stringify({do: 'download', item: res})); 
+        })         
+      }
   });
 });
 
