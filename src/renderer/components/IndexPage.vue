@@ -7,24 +7,37 @@
     <Row style="margin-top: 15px;" v-for="(item, i) in downloadItems" :key="i">
        <Col span="18" offset="2"> 
        <Card :padding=10>
-         <Row>
+         <Row style="margin-bottom: 5px;">
            <Col flex="auto"><span>{{item.title}}</span></Col>
-           <Col flex="100px">{{item.status==0?'解析中':item.status==1?'解析完成':item.status==2?'下载中':item.status==1?'暂停':item.status==1?'下载失败':'下载完成'}}</Col>
+           <Col flex="88px" 
+           style="text-align: right; font-size: 13px;" 
+           :class="item.status==1 || item.status==5 ? 'font-success' : ''"
+           >
+           {{item.status==0?'解析中':item.status==1?'解析完成':item.status==2?'下载中':item.status==3?'下载暂停':item.status==4?'下载失败': item.status==6?'解析失败': '下载完成'}}
+           </Col>
          </Row>
-         <div class="download_detail">
-           <div class="progress">
-             <Progress :percent="item.progress" :stroke-width="5"  status="active" />
-           </div>
-           <div class="buttonGroup" style="width: 88px;">
-             <ButtonGroup size="small" >
-                <Button><Icon type="md-play" /> 
-                <!-- <Icon type="md-pause" /> -->
-                </Button>
-                <Button @click="openFolder(item.dir)"><Icon type="md-folder" /></Button>
-                <Button><Icon type="md-trash" /></Button>
-            </ButtonGroup>
-           </div>
-         </div>
+         <Row>
+           <Col flex="auto">
+             <Progress 
+             :percent="item.status== 0 || item.status== 6 ? 100 : item.progress" 
+             :stroke-width="5" 
+             :stroke-color="item.status==0?'#2db7f5':item.status==3?'#808695':item.status==4?'#ed4014':item.status==5?'#19be6b':item.status==6?'#ff9900':'#2d8cf0'"  
+             status="active"  
+             >
+               <Icon type="checkmark-circled"></Icon>
+               <span v-if="item.status == 2">{{item.progress+'%'}}</span>
+             </Progress>
+           </Col>
+           <Col flex="88px">
+                <ButtonGroup size="small" >
+                    <Button><Icon type="md-play" /> 
+                    <!-- <Icon type="md-pause" /> -->
+                    </Button>
+                    <Button @click="openFolder(item.dir)"><Icon type="md-folder" /></Button>
+                    <Button><Icon type="md-trash" /></Button>
+                </ButtonGroup>
+           </Col>
+         </Row>
         </Card>
       </Col>
       <!-- <Col span="18" offset="2">
@@ -69,13 +82,16 @@
       // this.fileInfo()
     },
     methods: {
+      /**
+       * 下载
+       */
       search(e){
         let item = {
           id: this.$data.downloadItems.length,
           title: '--', 
           progress: 0,
           url: 'https://www.91porn.com/view_video.php?viewkey=1309503227&page=&viewtype=&category=',
-          status: 0, //0解析 1解析完成 2下载  3暂停  4失败  5完成
+          status: 0, //0解析 1解析完成 2下载  3下载暂停  4下载失败  5下载完成 6解析失败
           dir: ""
         },
         message = {
@@ -89,33 +105,32 @@
         const socket = new WebSocket('ws://127.0.0.1:7381/'); 
         // 打开Socket   
         socket.onopen = function(event) { 
-          // 发送一个初始化消息
+          // 发送地址解析请求
           socket.send(JSON.stringify(message)); 
 
           // 监听消息
           socket.onmessage = function(event) {
+            console.log(event)
             item = JSON.parse(event.data)
-            console.log(that.$data.downloadItems[item.id])
-            that.$data.downloadItems[item.id].title = item.title
-            that.$data.downloadItems[item.id].status = item.status
-            that.$data.downloadItems[item.id].dir = item.dir
-            console.log(that.$data)
+            if(item.do === 'new_mission'){
+              that.$data.downloadItems[item.item.id].title = item.item.title
+              that.$data.downloadItems[item.item.id].status = item.item.status
+              that.$data.downloadItems[item.item.id].dir = item.item.dir
+              console.log(that.$data)
+              // if(){
+
+              // }
+            }
           }; 
 
           // 监听Socket的关闭
-          socket.onclose = function(event) { 
-            console.log('Client notified socket has closed',event); 
-          }; 
+          // socket.onclose = function(event) { 
+          //   console.log('Client notified socket has closed',event); 
+          // }; 
 
           //socket.close() 
         };  
 
-        // ipcRenderer.invoke('start_do', this.$data.value).then(res => {
-        //   if(res.code == 0){
-        //   console.log(res)
-        //   this.$data.status = 0
-        // }
-        // });
       },
        openFolder(url){
          console.log(url)
@@ -157,13 +172,10 @@
 </script>
 
 <style lang="scss" scoped>
-  .download_detail{
-    width: 100%;
-    display: flex;
-
+  .font-success{
+    color: #19be6b;
   }
-
-  .download_detail .progress{
-    width: calc(100% - 88px);
+  .font-normal{
+    color: #515a6e;
   }
 </style>

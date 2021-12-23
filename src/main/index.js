@@ -62,6 +62,11 @@ function createWindow () {
   
 app.whenReady().then(() => {
   createWindow()
+  mainWindow.webContents.session.setProxy({
+    proxyRules: "127.0.0.1:7890"
+  }, async function (data) {
+    console.log(data)
+  })
 })
 
 
@@ -110,29 +115,16 @@ wss.broadcast = function broadcast(ws) {
 
 //socket初始化
 wss.on('connection', function connection(ws) {
-  // var i=0
-
-  //   var int = setInterval(function f() {
-  //   ws.send(i++) // 每隔 1 秒给连接方报一次数
-  // }, 100)
 
   ws.on('message', async (jsonStr,flags) => {
     let obj = eval('(' + jsonStr + ')');
 
-    // if(obj.do === 'new_mission'){
-    //   mainWindow.webContents.session.setProxy({
-    //     proxyRules: "127.0.0.1:7890"
-    //   }, async function (data) {
-    //     console.log(data)
-    //   })
-
+    if(obj.do === 'new_mission'){
       let video = new VideoDownload(),
       res = await video.analysis(obj.item) 
       console.log(res)
-      wss.broadcast(JSON.stringify(res));    
-    }
-    
-    
+      wss.broadcast(JSON.stringify({do: 'new_mission', item: res}));   
+      } 
   });
 });
 
